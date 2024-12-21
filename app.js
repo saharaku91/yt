@@ -48,7 +48,7 @@ function parseProxy(proxy) {
   const match = proxy.match(proxyRegex);
 
   if (!match) {
-    throw new Error(`Invalid proxy format: ${proxy}`);
+    throw new Error(`Invalid proxy format. Expected format: protocol://[username:password@]host:port. Received: ${proxy}`);
   }
 
   const [, protocol, username, password, host, port] = match;
