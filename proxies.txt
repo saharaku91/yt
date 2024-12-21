@@ -2,3 +2,5 @@ http://proxy1:port
 https://proxy2:port
 socks4://proxy3:port
 socks5://proxy4:port
+http://username:password@host:port
+socks5://username:password@host:port
