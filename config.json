@@ -1,5 +1,5 @@
 {
-  "videoUrl": "https://www.youtube.com/watch?v=jVKsUzG4YFw",
+  "videoUrl": "https://m.youtube.com/watch?v=-RnzNH6JM4A",
   "threads": 5,
   "viewDuration": {
     "min": 10,
@@ -10,7 +10,7 @@
     "max": 20
   },
   "proxy": {
-    "mode": "auto", // "manual" atau "auto"
+    "mode": "auto",
     "protocols": ["http", "https", "socks4", "socks5"]
   }
 }
