@@ -1,0 +1,16 @@
+{
+  "videoUrl": "https://www.youtube.com/watch?v=jVKsUzG4YFw",
+  "threads": 5,
+  "viewDuration": {
+    "min": 10,
+    "max": 30
+  },
+  "intervalBetweenViews": {
+    "min": 5,
+    "max": 20
+  },
+  "proxy": {
+    "mode": "auto", // "manual" atau "auto"
+    "protocols": ["http", "https", "socks4", "socks5"]
+  }
+}
