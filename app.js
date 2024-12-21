@@ -27,8 +27,15 @@ async function fetchProxies() {
       ...proxyList2.data.split("\n").filter(Boolean),
     ];
 
-    console.log(`Fetched ${proxies.length} proxies.`);
-    return proxies;
+    // Ensure all proxies have "http://" prefixed
+    const formattedProxies = proxies.map((proxy) =>
+      proxy.startsWith("http://") || proxy.startsWith("https://") || proxy.startsWith("socks5://")
+        ? proxy
+        : `http://${proxy}`
+    );
+
+    console.log(`Fetched ${formattedProxies.length} proxies.`);
+    return formattedProxies;
   } catch (error) {
     console.error("Failed to fetch proxies:", error.message);
     return [];
