@@ -106,7 +106,7 @@ async function simulateView(proxy, index, useParseProxy) {
 
     console.log(`[Thread ${index}] Launching browser...`);
     browser = await puppeteer.launch({
-      headless: true,
+      headless: 'shell',
       args: [
         "--incognito",
         `--user-agent=${userAgentInstance.toString()}`,
