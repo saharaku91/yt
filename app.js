@@ -37,12 +37,14 @@ async function fetchProxies() {
 
 // Function to simulate a single browser session
 async function simulateView(proxy, index) {
-  console.log(`[Thread ${index}] Starting with proxy: ${proxy}`);
+  const userAgentInstance = new userAgent(); // Generate a random user-agent
+  console.log(`[Thread ${index}] Starting with proxy: ${proxy}, User-Agent: ${userAgentInstance.toString()}`);
+
   const browser = await puppeteer.launch({
     headless: true,
     args: [
       "--incognito",
-      `--user-agent=${new userAgent().toString()}`,
+      `--user-agent=${userAgentInstance.toString()}`,
       `--proxy-server=${proxy}`,
     ],
   });
@@ -52,6 +54,14 @@ async function simulateView(proxy, index) {
   try {
     console.log(`[Thread ${index}] Navigating to video URL: ${config.videoUrl}`);
     await page.goto(config.videoUrl, { waitUntil: "networkidle2" });
+
+    // Ensure the video is played automatically
+    await page.evaluate(() => {
+      const video = document.querySelector("video");
+      if (video) {
+        video.play();
+      }
+    });
 
     const viewDuration = getRandomDuration(config.viewDuration.min, config.viewDuration.max);
     console.log(`[Thread ${index}] Simulating view for ${viewDuration} seconds.`);
@@ -75,13 +85,13 @@ async function simulateView(proxy, index) {
     proxies = fs.readFileSync("./proxies.txt", "utf-8").split("\n").filter(Boolean);
   }
 
-  if (proxies.length === 0) {
-    console.error("No proxies available. Exiting.");
+  if (proxies.length < config.threads) {
+    console.error("Not enough proxies for the number of threads. Exiting.");
     return;
   }
 
   const tasks = Array.from({ length: config.threads }, (_, i) => {
-    const proxy = proxies[i % proxies.length];
+    const proxy = proxies[i]; // Assign a unique proxy to each thread
     return simulateView(proxy, i + 1);
   });
 
