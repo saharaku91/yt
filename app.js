@@ -35,26 +35,58 @@ async function fetchProxies() {
   }
 }
 
+// Function to parse proxy with optional username and password
+function parseProxy(proxy) {
+  const proxyRegex = /^(https?|socks5?):\/\/(?:([^:@]+):([^@]+)@)?([^:]+):(\d+)$/;
+  const match = proxy.match(proxyRegex);
+
+  if (!match) {
+    throw new Error(`Invalid proxy format: ${proxy}`);
+  }
+
+  const [, protocol, username, password, host, port] = match;
+  return {
+    protocol,
+    host,
+    port,
+    username: username || null,
+    password: password || null,
+  };
+}
+
 // Function to simulate a single browser session
 async function simulateView(proxy, index) {
   const userAgentInstance = new userAgent(); // Generate a random user-agent
-  console.log(`[Thread ${index}] Starting with proxy: ${proxy}, User-Agent: ${userAgentInstance.toString()}`);
-
   let browser;
 
   try {
+    // Parse proxy and log its details
+    const parsedProxy = parseProxy(proxy);
+    console.log(
+      `[Thread ${index}] Using proxy: ${parsedProxy.host}:${parsedProxy.port}, Protocol: ${parsedProxy.protocol}`
+    );
+
     browser = await puppeteer.launch({
       headless: true,
       args: [
         "--incognito",
         `--user-agent=${userAgentInstance.toString()}`,
-        `--proxy-server=${proxy}`,
+        `--proxy-server=${parsedProxy.protocol}://${parsedProxy.host}:${parsedProxy.port}`,
         "--no-sandbox",
         "--disable-setuid-sandbox",
       ],
     });
 
     const page = await browser.newPage();
+
+    // Authenticate proxy if username and password are provided
+    if (parsedProxy.username && parsedProxy.password) {
+      console.log(`[Thread ${index}] Authenticating proxy...`);
+      await page.authenticate({
+        username: parsedProxy.username,
+        password: parsedProxy.password,
+      });
+    }
 
     console.log(`[Thread ${index}] Navigating to video URL: ${config.videoUrl}`);
     try {
