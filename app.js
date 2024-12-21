@@ -40,39 +40,61 @@ async function simulateView(proxy, index) {
   const userAgentInstance = new userAgent(); // Generate a random user-agent
   console.log(`[Thread ${index}] Starting with proxy: ${proxy}, User-Agent: ${userAgentInstance.toString()}`);
 
-  const browser = await puppeteer.launch({
-  headless: true,
-  args: [
-    "--incognito",
-    `--user-agent=${userAgentInstance.toString()}`,
-    `--proxy-server=${proxy}`,
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-  ],
-});
-
-  const page = await browser.newPage();
+  let browser;
 
   try {
-    console.log(`[Thread ${index}] Navigating to video URL: ${config.videoUrl}`);
-    await page.goto(config.videoUrl, { waitUntil: "networkidle2" });
-
-    // Ensure the video is played automatically
-    await page.evaluate(() => {
-      const video = document.querySelector("video");
-      if (video) {
-        video.play();
-      }
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--incognito",
+        `--user-agent=${userAgentInstance.toString()}`,
+        `--proxy-server=${proxy}`,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+      ],
     });
+
+    const page = await browser.newPage();
+
+    console.log(`[Thread ${index}] Navigating to video URL: ${config.videoUrl}`);
+    try {
+      await page.goto(config.videoUrl, { waitUntil: "networkidle2", timeout: 30000 });
+    } catch (error) {
+      console.error(`[Thread ${index}] Failed to open video: ${error.message}`);
+      return;
+    }
+
+    try {
+      const isVideoPlayable = await page.evaluate(() => {
+        const video = document.querySelector("video");
+        if (video) {
+          video.play();
+          return true;
+        }
+        return false;
+      });
+
+      if (!isVideoPlayable) {
+        console.error(`[Thread ${index}] Video element not found or failed to play.`);
+        return;
+      }
+    } catch (error) {
+      console.error(`[Thread ${index}] Error playing video: ${error.message}`);
+      return;
+    }
 
     const viewDuration = getRandomDuration(config.viewDuration.min, config.viewDuration.max);
     console.log(`[Thread ${index}] Simulating view for ${viewDuration} seconds.`);
     await page.waitForTimeout(viewDuration * 1000);
+
+    console.log(`[Thread ${index}] View completed. Closing browser.`);
   } catch (error) {
-    console.error(`[Thread ${index}] Error: ${error.message}`);
+    console.error(`[Thread ${index}] Proxy failed or browser error: ${error.message}`);
   } finally {
-    await browser.close();
-    console.log(`[Thread ${index}] Browser session closed.`);
+    if (browser) {
+      await browser.close();
+      console.log(`[Thread ${index}] Browser session closed.`);
+    }
   }
 }
 
@@ -97,7 +119,7 @@ async function simulateView(proxy, index) {
     return simulateView(proxy, i + 1);
   });
 
-  console.log("Starting all threads...");
-  await Promise.all(tasks);
+  console.log("Starting all threads concurrently...");
+  await Promise.all(tasks); // Run all tasks concurrently
   console.log("All threads completed.");
 })();
