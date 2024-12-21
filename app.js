@@ -41,13 +41,15 @@ async function simulateView(proxy, index) {
   console.log(`[Thread ${index}] Starting with proxy: ${proxy}, User-Agent: ${userAgentInstance.toString()}`);
 
   const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--incognito",
-      `--user-agent=${userAgentInstance.toString()}`,
-      `--proxy-server=${proxy}`,
-    ],
-  });
+  headless: true,
+  args: [
+    "--incognito",
+    `--user-agent=${userAgentInstance.toString()}`,
+    `--proxy-server=${proxy}`,
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+  ],
+});
 
   const page = await browser.newPage();
 
