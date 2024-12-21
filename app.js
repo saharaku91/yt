@@ -16,7 +16,7 @@ async function fetchProxies() {
   try {
     console.log("Fetching proxies from external sources...");
     const proxyList1 = await axios.get(
-      "https://www.proxy-list.download/api/v1/get?type=https&anon=elite"
+      "https://www.proxy-list.download/api/v1/get?type=http&anon=elite"
     );
     const proxyList2 = await axios.get(
       "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=elite"
